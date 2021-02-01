@@ -1,13 +1,13 @@
 import React from 'react';
 
-import Layout from './components/Layout/Layout';
-
+import Layout from './containers/Layout/Layout';
+import BurgerBuilder from './containers/BurgerBuilder/BurgerBuilder';
 
 const App = () =>  {
   return (
     <div>
       <Layout>
-        <p>Does the <code>props.children</code> render?</p> 
+        <BurgerBuilder /> 
       </Layout>
     </div>
   );

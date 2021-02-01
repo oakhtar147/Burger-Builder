@@ -63,10 +63,11 @@ class BurgerBuilder extends Component {
       <div className={styles.BurgerBuilder}>
         <Modal show={this.state.proceedToPurchase} cancelPurchase={this.handleCancelPurchase}>
           <OrderSummary 
+            show={this.state.proceedToPurchase}
             ingredients={this.state.ingredients} 
             price={this.state.totalPrice}  
             cancelPurchase={this.handleCancelPurchase}
-            />
+          />
         </Modal>
         <Burger ingredients={this.state.ingredients} />
         <BuildControls 

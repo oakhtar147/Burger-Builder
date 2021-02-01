@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import Button from '../../UI/Button/Button';
 
@@ -10,6 +10,10 @@ const OrderSummary = props => {
         <span style={{textTransform: 'capitalize'}}>{ingredient}: <strong>{props.ingredients[ingredient]}</strong></span>
       </li>
     ));
+
+  useEffect(() => {
+    console.log("[OrderSummary] useEffect");
+  }, [props.show]);
 
   return (
     <>
