@@ -19,17 +19,29 @@ const INGREDIENT_PRICES = {
 
 class BurgerBuilder extends Component {
   state = {
-    ingredients: {
-      ketchup: 0,
-      cheese: 0,
-      meat: 0,
-      salad: 0,
-    },
-    totalPrice: 4.0,
+    ingredients: null,
+    // ingredients: {
+    //   cheese: 1,
+    //   ketchup: 1,
+    //   meat: 1,
+    //   salad: 1
+    // },
+    totalPrice: 4.10,
     proceedToPurchase: false,
     sendingRequest: false,
+    error: false
   }
   
+  async componentDidMount() {
+    try {
+      const { data } = await axios.get('/ingredients.json');
+      this.setState({ ingredients: data });
+    }
+    catch(error) {
+      this.setState({ error })
+    }
+  }
+
   handlePurchase = () => {
     this.setState({ proceedToPurchase: true });
   }
@@ -54,16 +66,11 @@ class BurgerBuilder extends Component {
     }
 
     try {
-      const request = await axios.post('/orders', order);
-      console.log(request);
+      await axios.post('/orders.json', order);
       this.setState({ sendingRequest: false,  proceedToPurchase: false });
     } catch (err) {
       console.log(err);
     }
-    // } finally {
-    //   // in any case the request is sent.
-    //   // also close the modal
-    // }
   }
 
   handleIncrementIngredient = (key) => {
@@ -91,30 +98,44 @@ class BurgerBuilder extends Component {
       disabledIngredients[key] = (disabledIngredients[key] <= 0);
     }
 
-    const orderSummary = <OrderSummary 
-      show={this.state.proceedToPurchase}
-      ingredients={this.state.ingredients} 
-      price={this.state.totalPrice}  
-      purchase={this.handleCheckout}
-      cancelPurchase={this.handleCancelPurchase}
-      />
+    let orderSummary, 
+      burgerAndControls = <Spinner />;
+
+    if (this.state.ingredients) {
+        burgerAndControls = (
+          <>
+            <Burger ingredients={this.state.ingredients} />
+            <BuildControls 
+              incrementIngredient={this.handleIncrementIngredient}
+              decrementIngredient={this.handleDecrementIngredient} 
+              disabledIngredients={disabledIngredients}
+              totalPrice={this.state.totalPrice}
+              purchasable={this.state.totalPrice > 4.0}
+              proceedToPurchase={this.handlePurchase}
+            />
+          </>
+        );
+
+      orderSummary = (
+        <OrderSummary 
+          show={this.state.proceedToPurchase}
+          ingredients={this.state.ingredients} 
+          price={this.state.totalPrice}  
+          purchase={this.handleCheckout}
+          cancelPurchase={this.handleCancelPurchase}
+        />
+      )
+    }
+    
     
     return (
       <div className={styles.BurgerBuilder}>
         <Modal
           show={this.state.proceedToPurchase} 
-          cancelPurchase={this.handleCancelPurchase}>
+          closeModal={this.handleCancelPurchase}>
           {this.state.sendingRequest ? <Spinner /> : orderSummary}
         </Modal>
-        <Burger ingredients={this.state.ingredients} />
-        <BuildControls 
-          incrementIngredient={this.handleIncrementIngredient}
-          decrementIngredient={this.handleDecrementIngredient} 
-          disabledIngredients={disabledIngredients}
-          totalPrice={this.state.totalPrice}
-          purchasable={this.state.totalPrice > 4.0}
-          proceedToPurchase={this.handlePurchase}
-          />
+        {this.state.error ? <p>{this.state.error.message}</p> : burgerAndControls}
       </div>
     );
   }
