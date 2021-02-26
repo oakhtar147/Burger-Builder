@@ -1,15 +1,13 @@
-import React from 'react';
+import React from "react";
 
-import styles from './NavigationItems.module.css';
-import NavigationItem from './NagivationItem/NavigationItem';
+import styles from "./NavigationItems.module.css";
+import NavigationItem from "./NagivationItem/NavigationItem";
 
-
-const NavigationItems = props => (
+const NavigationItems = (props) => (
   <div className={styles.NavigationItems}>
-    <NavigationItem link='/' active>Burger Builder</NavigationItem>
-    <NavigationItem link='/'>Contact us</NavigationItem>
+    <NavigationItem link="/">Burger Builder</NavigationItem>
+    <NavigationItem link="/orders">My Orders</NavigationItem>
   </div>
 );
-
 
 export default NavigationItems;

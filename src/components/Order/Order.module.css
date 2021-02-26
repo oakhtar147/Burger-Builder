@@ -1,0 +1,15 @@
+.Order {
+  width: 80%;
+  border: 1px solid #eee;
+  box-shadow: 0 2px 3px #ccc;
+  padding: 10px;
+  margin: 70px auto;
+  box-sizing: border-box;
+}
+
+.Order .details {
+  border: 2px solid #8F5C2C;
+  padding: 5px;
+  margin: 2px;
+  text-transform: capitalize;
+}
