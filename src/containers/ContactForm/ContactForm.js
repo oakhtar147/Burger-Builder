@@ -7,10 +7,26 @@ import Spinner from "../../components/UI/Spinner/Spinner";
 import Input from "../../components/UI/Input/Input";
 
 class ContactForm extends Component {
-  fieldConfig = (elementType, type, placeholder, value) => ({
+  fieldConfig = (
+    elementType,
+    type,
+    placeholder,
+    value,
+    fixedLength = null,
+    required = true,
+    isValid = false
+  ) => ({
     elementType,
     elementConfig: { type, placeholder },
     value,
+    validation: {
+      required,
+      minLength: 5,
+      maxLength: 40,
+      fixedLength,
+    },
+    isValid,
+    touched: false,
   });
 
   state = {
@@ -18,7 +34,7 @@ class ContactForm extends Component {
       name: this.fieldConfig("input", "text", "Your Name"),
       email: this.fieldConfig("input", "email", "Your Email"),
       street: this.fieldConfig("input", "text", "Street No."),
-      zip: this.fieldConfig("input", "text", "Zip Code"),
+      zip: this.fieldConfig("input", "text", "Zip Code", "", 5),
       methodOfPayment: {
         elementType: "select",
         elementConfig: {
@@ -29,9 +45,28 @@ class ContactForm extends Component {
           ],
         },
         value: "",
+        isValid: true,
       },
     },
     sendingRequest: false,
+    formIsValid: false,
+  };
+
+  checkValidity = (field, rules) => {
+    const isNonEmpty = field.trim().length > 0;
+
+    const satisfiesMinLength =
+      !rules.fixedLength && field.trim().length >= rules.minLength;
+
+    const satisfiesMaxLength =
+      !rules.fixedLength && field.trim().length <= rules.maxLength;
+
+    const isFixedLength = field.trim().length === rules.fixedLength;
+
+    return (
+      isNonEmpty &&
+      ((satisfiesMinLength && satisfiesMaxLength) || isFixedLength)
+    );
   };
 
   changedInputHandler = (event, identifier) => {
@@ -39,9 +74,27 @@ class ContactForm extends Component {
     // deep copy, fields refer to the clone's fields and not the original state fields
     const updatedField = { ...updatedOrderForm[identifier] };
     updatedField.value = event.target.value;
+
+    let formIsValid = false;
+
+    if (updatedField.validation) {
+      updatedField.isValid = this.checkValidity(
+        updatedField.value,
+        updatedField.validation
+      );
+      updatedField.touched = true;
+
+      for (let field in updatedOrderForm) {
+        if (field.isValid) {
+          formIsValid = true;
+        }
+      }
+    }
+
     updatedOrderForm[identifier] = updatedField;
     this.setState({
       orderForm: updatedOrderForm,
+      formIsValid,
     });
   };
 
@@ -49,19 +102,15 @@ class ContactForm extends Component {
     event.preventDefault();
     this.setState({ sendingRequest: true });
     const { ingredients, totalPrice } = this.props;
-    const order = {
-      ingredients,
-      totalPrice,
-      customerDetails: {
-        name: "Osama Akhtar",
-        address: "Street 07 Sector 02",
-        zip: "46000",
-        city: "Rawalpindi",
-      },
-      paymentMethod: "COD",
-    };
+
+    const orderDetails = { ingredients, totalPrice };
+
+    for (let [field, config] of Object.entries(this.state.orderForm)) {
+      orderDetails[field] = config.value;
+    }
+
     try {
-      await axios.post("/orders.json", order);
+      await axios.post("/orders.json", orderDetails);
       this.setState({ sendingRequest: false });
       this.props.history.replace("/");
     } catch (err) {
@@ -79,20 +128,22 @@ class ContactForm extends Component {
     const form = this.state.sendingRequest ? (
       <Spinner />
     ) : (
-      <form>
+      <form onSubmit={this.orderHandler}>
         {formElements.map((formElement) => (
           <Input
             key={formElement.id}
             elementType={formElement.config.elementType}
             elementConfig={formElement.config.elementConfig}
             value={formElement.config.value}
+            invalid={!formElement.config.isValid}
+            shouldValidate={formElement.config.validation}
+            touched={formElement.config.touched}
             changed={(event) => this.changedInputHandler(event, formElement.id)}
           />
         ))}
-        <Button type="Success" onClick={this.orderHandler}>
+        <Button type="Success" disabled={!this.state.formIsValid}>
           Order Now!
         </Button>
-        <Button type="Danger">Cancel Order!</Button>
       </form>
     );
 

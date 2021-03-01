@@ -112,7 +112,7 @@ class BurgerBuilder extends Component {
             decrementIngredient={this.handleDecrementIngredient}
             disabledIngredients={disabledIngredients}
             totalPrice={this.state.totalPrice}
-            purchasable={this.state.totalPrice > 4.0}
+            purchasable={this.state.totalPrice >= 4.0}
             proceedToPurchase={this.handlePurchase}
           />
         </>

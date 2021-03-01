@@ -21,7 +21,16 @@
   box-sizing: border-box;
 }
 
+::placeholder {
+  color: black;
+}
+
 .InputElement:focus {
   outline: none;
   background: #ccc;
+}
+
+.Invalid {
+  border: 2px solid rgb(218, 26, 26);
+  background-color: rgb(218, 129, 129)
 }

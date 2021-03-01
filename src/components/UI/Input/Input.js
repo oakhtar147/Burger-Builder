@@ -3,10 +3,16 @@ import React from "react";
 import styles from "./Input.module.css";
 
 const Input = (props) => {
+  const classes = [styles.InputElement];
+
+  if (props.shouldValidate && props.invalid && props.touched) {
+    classes.push(styles.Invalid);
+  }
+
   const inputs = {
     input: (
       <input
-        className={styles.InputElement}
+        className={classes.join(" ")}
         {...props.elementConfig}
         value={props.value}
         onChange={props.changed}
@@ -14,7 +20,7 @@ const Input = (props) => {
     ),
     textarea: (
       <textarea
-        className={styles.InputElement}
+        className={classes.join(" ")}
         {...props.elementConfig}
         value={props.value}
         onChange={props.changed}
@@ -22,7 +28,7 @@ const Input = (props) => {
     ),
     select: (
       <select
-        className={styles.InputElement}
+        className={classes.join(" ")}
         value={props.value}
         onChange={props.changed}
       >
