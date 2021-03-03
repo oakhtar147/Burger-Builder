@@ -1,159 +1,227 @@
 import React, { Component } from "react";
+import { connect } from "react-redux";
 
-import axios from "../../axiosOrders";
-import styles from "./ContactForm.module.css";
 import Button from "../../components/UI/Button/Button";
 import Spinner from "../../components/UI/Spinner/Spinner";
+import classes from "./ContactForm.module.css";
+import axios from "../../axiosOrders";
 import Input from "../../components/UI/Input/Input";
+import { purchaseBurgerAsync } from "../../store/actions/";
+import withErrorHandler from "../../hoc/WithErrorHandler";
 
 class ContactForm extends Component {
-  fieldConfig = (
-    elementType,
-    type,
-    placeholder,
-    value,
-    fixedLength = null,
-    required = true,
-    isValid = false
-  ) => ({
-    elementType,
-    elementConfig: { type, placeholder },
-    value,
-    validation: {
-      required,
-      minLength: 5,
-      maxLength: 40,
-      fixedLength,
-    },
-    isValid,
-    touched: false,
-  });
-
   state = {
     orderForm: {
-      name: this.fieldConfig("input", "text", "Your Name"),
-      email: this.fieldConfig("input", "email", "Your Email"),
-      street: this.fieldConfig("input", "text", "Street No."),
-      zip: this.fieldConfig("input", "text", "Zip Code", "", 5),
-      methodOfPayment: {
+      name: {
+        elementType: "input",
+        elementConfig: {
+          type: "text",
+          placeholder: "Your Name",
+        },
+        value: "",
+        validation: {
+          required: true,
+        },
+        valid: false,
+        touched: false,
+      },
+      street: {
+        elementType: "input",
+        elementConfig: {
+          type: "text",
+          placeholder: "Street",
+        },
+        value: "",
+        validation: {
+          required: true,
+        },
+        valid: false,
+        touched: false,
+      },
+      zipCode: {
+        elementType: "input",
+        elementConfig: {
+          type: "text",
+          placeholder: "ZIP Code",
+        },
+        value: "",
+        validation: {
+          required: true,
+          minLength: 5,
+          maxLength: 5,
+          isNumeric: true,
+        },
+        valid: false,
+        touched: false,
+      },
+      country: {
+        elementType: "input",
+        elementConfig: {
+          type: "text",
+          placeholder: "Country",
+        },
+        value: "",
+        validation: {
+          required: true,
+        },
+        valid: false,
+        touched: false,
+      },
+      email: {
+        elementType: "input",
+        elementConfig: {
+          type: "email",
+          placeholder: "Your E-Mail",
+        },
+        value: "",
+        validation: {
+          required: true,
+          isEmail: true,
+        },
+        valid: false,
+        touched: false,
+      },
+      deliveryMethod: {
         elementType: "select",
         elementConfig: {
           options: [
-            { value: "mastercard", displayValue: "MasterCard" },
-            { value: "easypaisa", displayValue: "EasyPaisa" },
-            { value: "jazzcash", displayValue: "JazzCash" },
+            { value: "fastest", displayValue: "Fastest" },
+            { value: "cheapest", displayValue: "Cheapest" },
           ],
         },
         value: "",
-        isValid: true,
+        validation: {},
+        valid: true,
       },
     },
-    sendingRequest: false,
     formIsValid: false,
   };
 
-  checkValidity = (field, rules) => {
-    const isNonEmpty = field.trim().length > 0;
-
-    const satisfiesMinLength =
-      !rules.fixedLength && field.trim().length >= rules.minLength;
-
-    const satisfiesMaxLength =
-      !rules.fixedLength && field.trim().length <= rules.maxLength;
-
-    const isFixedLength = field.trim().length === rules.fixedLength;
-
-    return (
-      isNonEmpty &&
-      ((satisfiesMinLength && satisfiesMaxLength) || isFixedLength)
-    );
-  };
-
-  changedInputHandler = (event, identifier) => {
-    const updatedOrderForm = { ...this.state.orderForm };
-    // deep copy, fields refer to the clone's fields and not the original state fields
-    const updatedField = { ...updatedOrderForm[identifier] };
-    updatedField.value = event.target.value;
-
-    let formIsValid = false;
-
-    if (updatedField.validation) {
-      updatedField.isValid = this.checkValidity(
-        updatedField.value,
-        updatedField.validation
-      );
-      updatedField.touched = true;
-
-      for (let field in updatedOrderForm) {
-        if (field.isValid) {
-          formIsValid = true;
-        }
-      }
-    }
-
-    updatedOrderForm[identifier] = updatedField;
-    this.setState({
-      orderForm: updatedOrderForm,
-      formIsValid,
-    });
-  };
-
-  orderHandler = async (event) => {
+  orderHandler = (event) => {
     event.preventDefault();
-    this.setState({ sendingRequest: true });
-    const { ingredients, totalPrice } = this.props;
+    this.setState({ loading: true });
+    const formData = {};
+    for (let formElementIdentifier in this.state.orderForm) {
+      formData[formElementIdentifier] = this.state.orderForm[
+        formElementIdentifier
+      ].value;
+    }
+    const order = {
+      ingredients: this.props.ings,
+      price: this.props.price,
+      orderData: formData,
+    };
 
-    const orderDetails = { ingredients, totalPrice };
+    this.props.orderBurger(order);
+  };
 
-    for (let [field, config] of Object.entries(this.state.orderForm)) {
-      orderDetails[field] = config.value;
+  checkValidity(value, rules) {
+    let isValid = true;
+    if (!rules) {
+      return true;
     }
 
-    try {
-      await axios.post("/orders.json", orderDetails);
-      this.setState({ sendingRequest: false });
-      this.props.history.replace("/");
-    } catch (err) {
-      console.log(err);
+    if (rules.required) {
+      isValid = value.trim() !== "" && isValid;
     }
+
+    if (rules.minLength) {
+      isValid = value.length >= rules.minLength && isValid;
+    }
+
+    if (rules.maxLength) {
+      isValid = value.length <= rules.maxLength && isValid;
+    }
+
+    if (rules.isEmail) {
+      const pattern = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
+      isValid = pattern.test(value) && isValid;
+    }
+
+    if (rules.isNumeric) {
+      const pattern = /^\d+$/;
+      isValid = pattern.test(value) && isValid;
+    }
+
+    return isValid;
+  }
+
+  inputChangedHandler = (event, inputIdentifier) => {
+    const updatedOrderForm = {
+      ...this.state.orderForm,
+    };
+    const updatedFormElement = {
+      ...updatedOrderForm[inputIdentifier],
+    };
+    updatedFormElement.value = event.target.value;
+    updatedFormElement.valid = this.checkValidity(
+      updatedFormElement.value,
+      updatedFormElement.validation
+    );
+    updatedFormElement.touched = true;
+    updatedOrderForm[inputIdentifier] = updatedFormElement;
+
+    let formIsValid = true;
+    for (let inputIdentifier in updatedOrderForm) {
+      formIsValid = updatedOrderForm[inputIdentifier].valid && formIsValid;
+    }
+    this.setState({ orderForm: updatedOrderForm, formIsValid: formIsValid });
   };
 
   render() {
-    const formElements = [];
-    for (const [key, config] of Object.entries(this.state.orderForm)) {
-      const field = { id: key, config };
-      formElements.push(field);
+    const formElementsArray = [];
+    for (let key in this.state.orderForm) {
+      formElementsArray.push({
+        id: key,
+        config: this.state.orderForm[key],
+      });
     }
-
-    const form = this.state.sendingRequest ? (
-      <Spinner />
-    ) : (
+    let form = (
       <form onSubmit={this.orderHandler}>
-        {formElements.map((formElement) => (
+        {formElementsArray.map((formElement) => (
           <Input
             key={formElement.id}
             elementType={formElement.config.elementType}
             elementConfig={formElement.config.elementConfig}
             value={formElement.config.value}
-            invalid={!formElement.config.isValid}
+            invalid={!formElement.config.valid}
             shouldValidate={formElement.config.validation}
             touched={formElement.config.touched}
-            changed={(event) => this.changedInputHandler(event, formElement.id)}
+            changed={(event) => this.inputChangedHandler(event, formElement.id)}
           />
         ))}
         <Button type="Success" disabled={!this.state.formIsValid}>
-          Order Now!
+          ORDER
         </Button>
       </form>
     );
-
+    if (this.state.loading) {
+      form = <Spinner />;
+    }
     return (
-      <div className={styles.ContactForm}>
-        <h2>Your Information</h2>
+      <div className={classes.ContactForm}>
+        <h4>Enter your Contact Data</h4>
         {form}
       </div>
     );
   }
 }
 
-export default ContactForm;
+const mapStateToProps = (state) => {
+  return {
+    ings: state.burger.ingredients,
+    price: state.burger.totalPrice,
+    loading: state.orders.loading,
+  };
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    orderBurger: (formData) => dispatch(purchaseBurgerAsync(formData)),
+  };
+};
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(withErrorHandler(ContactForm, axios));
