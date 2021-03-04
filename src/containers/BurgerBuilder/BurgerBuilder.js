@@ -13,6 +13,7 @@ import {
   incrementIngredient,
   decrementIngredient,
   getIngredientsAsync,
+  purchaseBurgerInit,
 } from "../../store/actions/";
 
 class BurgerBuilder extends Component {
@@ -32,7 +33,8 @@ class BurgerBuilder extends Component {
     this.setState({ proceedToPurchase: false });
   };
 
-  handleCheckout = async () => {
+  handleCheckout = () => {
+    this.props.purchaseBurgerInit();
     this.props.history.push("/checkout");
   };
 
@@ -102,6 +104,7 @@ const mapDispatchToProps = (dispatch) => {
     handleIncrementIngredient: (key) => dispatch(incrementIngredient(key)),
     handleDecrementIngredient: (key) => dispatch(decrementIngredient(key)),
     getIngredients: () => dispatch(getIngredientsAsync()),
+    purchaseBurgerInit: () => dispatch(purchaseBurgerInit()),
   };
 };
 

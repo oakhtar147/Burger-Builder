@@ -2,17 +2,17 @@ import axios from "../../axiosOrders";
 
 import * as actionTypes from "./actionTypes";
 
-export const incrementIngredient = (key) => {
+export const incrementIngredient = (ingredientName) => {
   return {
     type: actionTypes.INC_INGREDIENT,
-    key,
+    ingredientName,
   };
 };
 
-export const decrementIngredient = (key) => {
+export const decrementIngredient = (ingredientName) => {
   return {
     type: actionTypes.DEC_INGREDIENT,
-    key,
+    ingredientName,
   };
 };
 

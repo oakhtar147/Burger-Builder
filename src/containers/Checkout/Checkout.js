@@ -6,14 +6,10 @@ import CheckoutSummary from "../../components/Order/CheckoutSummary/CheckoutSumm
 import ContactForm from "../ContactForm/ContactForm";
 
 class Checkout extends Component {
-  state = {
-    ingredients: { cheese: 1 },
-    totalPrice: 0,
-  };
-
   render() {
     const summary = this.props.ingredients ? (
       <>
+        {this.props.purchased && <Redirect to="/" />}
         <CheckoutSummary ingredients={this.props.ingredients} />
         <Route
           path={this.props.match.url + "/contact"}
@@ -31,6 +27,7 @@ class Checkout extends Component {
 const mapStateToProps = (state) => {
   return {
     ingredients: state.burger.ingredients,
+    purchased: state.orders.purchased,
   };
 };
 

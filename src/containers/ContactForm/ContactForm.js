@@ -195,12 +195,14 @@ class ContactForm extends Component {
         </Button>
       </form>
     );
-    if (this.state.loading) {
+
+    if (this.props.loading) {
       form = <Spinner />;
     }
+
     return (
       <div className={classes.ContactForm}>
-        <h4>Enter your Contact Data</h4>
+        <h4>Your information</h4>
         {form}
       </div>
     );

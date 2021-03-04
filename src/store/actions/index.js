@@ -4,4 +4,10 @@ export {
   getIngredientsAsync,
 } from "./burgerBuilder";
 
-export { purchaseBurgerAsync } from "./order";
+export {
+  purchaseBurgerAsync,
+  purchaseBurgerInit,
+  fetchOrdersAsync,
+} from "./order";
+
+export { authAsync } from "./auth";
