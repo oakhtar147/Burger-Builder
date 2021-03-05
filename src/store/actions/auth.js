@@ -2,8 +2,11 @@ import axios from "axios";
 
 import * as actionTypes from "./actionTypes";
 
-const AUTH_ENDPOINT =
+const AUTH_SIGNUP_ENDPOINT =
   "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyAR0QSiw8jnvaY6OZdtfQwOuOHsproDACY";
+
+const AUTH_SIGNIN_ENDPOINT =
+  "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyAR0QSiw8jnvaY6OZdtfQwOuOHsproDACY";
 
 const authStarted = () => {
   return {
@@ -11,10 +14,11 @@ const authStarted = () => {
   };
 };
 
-const auth = (data) => {
+const auth = (idToken, localId) => {
   return {
     type: actionTypes.AUTH,
-    data,
+    idToken,
+    localId,
   };
 };
 
@@ -25,7 +29,21 @@ const authFailed = (error) => {
   };
 };
 
-export const authAsync = (email, password) => {
+const authLogout = () => {
+  return {
+    type: actionTypes.AUTH_LOGOUT,
+  };
+};
+
+const authLogoutAsync = (expirationTime) => {
+  return (dispatch) => {
+    setTimeout(() => {
+      dispatch(authLogout());
+    }, expirationTime * 1000);
+  };
+};
+
+export const authAsync = (email, password, isSignup) => {
   return (dispatch) => {
     dispatch(authStarted());
     const payload = {
@@ -34,14 +52,14 @@ export const authAsync = (email, password) => {
       returnSecureToken: true,
     };
     axios
-      .post(AUTH_ENDPOINT, payload)
+      .post(isSignup ? AUTH_SIGNUP_ENDPOINT : AUTH_SIGNIN_ENDPOINT, payload)
       .then((response) => {
-        console.log(response);
-        dispatch(auth(response.data));
+        const { idToken, localId, expiresIn } = response.data;
+        dispatch(auth(idToken, localId));
+        dispatch(authLogoutAsync(expiresIn));
       })
       .catch((error) => {
-        console.log(error);
-        dispatch(authFailed(error));
+        dispatch(authFailed(error.response.data.error));
       });
   };
 };

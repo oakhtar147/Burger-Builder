@@ -4,6 +4,7 @@ import { connect } from "react-redux";
 import styles from "./Auth.module.css";
 import Input from "../../components/UI/Input/Input";
 import Button from "../../components/UI/Button/Button";
+import Spinner from "../../components/UI/Spinner/Spinner";
 import { authAsync } from "../../store/actions/";
 
 class Auth extends Component {
@@ -38,6 +39,7 @@ class Auth extends Component {
         touched: false,
       },
     },
+    isSignUp: true,
   };
 
   checkValidity(value, rules) {
@@ -92,8 +94,13 @@ class Auth extends Component {
     event.preventDefault();
     this.props.authAsync(
       this.state.controls.email.value,
-      this.state.controls.password.value
+      this.state.controls.password.value,
+      this.state.isSignUp
     );
+  };
+
+  authModeHandler = () => {
+    this.setState((prevState) => ({ isSignUp: !prevState.isSignUp }));
   };
 
   render() {
@@ -105,7 +112,7 @@ class Auth extends Component {
       });
     }
 
-    const form = formElementsArray.map((formElement) => (
+    let form = formElementsArray.map((formElement, idx) => (
       <Input
         key={formElement.id}
         elementType={formElement.config.elementType}
@@ -118,22 +125,46 @@ class Auth extends Component {
       />
     ));
 
+    if (this.props.loading) {
+      form = <Spinner />;
+    }
+    const error = this.props.error && (
+      <p>{this.props.error.message.replace("_", " ")}</p>
+    );
+
+    if (this.props.isAuthenticated) {
+      this.props.history.replace("/");
+    }
+
     return (
       <div className={styles.Auth}>
-        <h1>Authenticate</h1>
+        <h1>{this.state.isSignUp ? " Sign Up" : "Sign In"}</h1>
+        {error}
         <form onSubmit={this.onSubmitHandler}>
           {form}
           <Button type="Success">Submit</Button>
         </form>
+        <Button type="Danger" onClick={this.authModeHandler}>
+          {this.state.isSignUp ? "Switch to Sign In" : "Switch to Sign Up"}
+        </Button>
       </div>
     );
   }
 }
 
-const mapDispatchToProps = (dispatch) => {
+const mapStateToProps = (state) => {
   return {
-    authAsync: (email, password) => dispatch(authAsync(email, password)),
+    isAuthenticated: state.auth.tokenId !== null,
+    error: state.auth.error,
+    loading: state.auth.loading,
   };
 };
 
-export default connect(null, mapDispatchToProps)(Auth);
+const mapDispatchToProps = (dispatch) => {
+  return {
+    authAsync: (email, password, isSignUp) =>
+      dispatch(authAsync(email, password, isSignUp)),
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Auth);

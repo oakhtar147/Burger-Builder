@@ -1,16 +1,15 @@
-import React from 'react';
+import React from "react";
 
-import styles from './SideDrawer.module.css';
-import Logo from '../../../Logo/Logo';
-import NavigationItems from '../NavigationItems/NavigationItems';
-import Backdrop from '../../Backdrop/Backdrop';
-
+import styles from "./SideDrawer.module.css";
+import Logo from "../../../Logo/Logo";
+import NavigationItems from "../NavigationItems/NavigationItems";
+import Backdrop from "../../Backdrop/Backdrop";
 
 const SideDrawer = (props) => {
   const sideDrawerClasses = [
-    styles.SideDrawer, 
-    props.showSideDrawer ? styles.Open : styles.Close
-  ].join(' ');
+    styles.SideDrawer,
+    props.showSideDrawer ? styles.Open : styles.Close,
+  ].join(" ");
 
   return (
     <>
@@ -20,12 +19,11 @@ const SideDrawer = (props) => {
           <Logo />
         </div>
         <nav>
-          <NavigationItems />
+          <NavigationItems isAuthenticated={props.isAuthenticated} />
         </nav>
       </div>
     </>
   );
-}
-
+};
 
 export default SideDrawer;
