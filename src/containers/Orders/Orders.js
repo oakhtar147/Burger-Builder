@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 
+import styles from "./Orders.module.css";
 import Order from "../../components/Order/Order";
 import axios from "../../axiosOrders";
 import withErrorHandler from "../../hoc/WithErrorHandler";
@@ -20,7 +21,12 @@ class Orders extends Component {
       />
     ));
 
-    return <div>{orders}</div>;
+    return (
+      <div className={styles.Orders}>
+        <h1>Your Orders</h1>
+        {orders}
+      </div>
+    );
   }
 }
 

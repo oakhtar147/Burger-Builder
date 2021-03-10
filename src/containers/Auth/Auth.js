@@ -1,11 +1,13 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
+import { Redirect } from "react-router-dom";
 
 import styles from "./Auth.module.css";
 import Input from "../../components/UI/Input/Input";
 import Button from "../../components/UI/Button/Button";
 import Spinner from "../../components/UI/Spinner/Spinner";
-import { authAsync } from "../../store/actions/";
+import { updateObject, checkValidity } from "../../shared/utility";
+import { authAsync, setAuthRedirectPath } from "../../store/actions/";
 
 class Auth extends Component {
   state = {
@@ -42,50 +44,23 @@ class Auth extends Component {
     isSignUp: true,
   };
 
-  checkValidity(value, rules) {
-    let isValid = true;
-    if (!rules) {
-      return true;
+  componentDidMount() {
+    if (!this.props.buildingBurger && this.props.authRedirect !== "/") {
+      this.props.setAuthRedirectPath();
     }
-
-    if (rules.required) {
-      isValid = value.trim() !== "" && isValid;
-    }
-
-    if (rules.minLength) {
-      isValid = value.length >= rules.minLength && isValid;
-    }
-
-    if (rules.maxLength) {
-      isValid = value.length <= rules.maxLength && isValid;
-    }
-
-    if (rules.isEmail) {
-      const pattern = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
-      isValid = pattern.test(value) && isValid;
-    }
-
-    if (rules.isNumeric) {
-      const pattern = /^\d+$/;
-      isValid = pattern.test(value) && isValid;
-    }
-
-    return isValid;
   }
 
   inputChangedHandler = (event, controlName) => {
-    const updatedControls = {
-      ...this.state.controls,
-      [controlName]: {
-        ...this.state.controls[controlName],
+    const updatedControls = updateObject(this.state.controls, {
+      [controlName]: updateObject(this.state.controls[controlName], {
         value: event.target.value,
-        valid: this.checkValidity(
+        valid: checkValidity(
           event.target.value,
           this.state.controls[controlName].validation
         ),
         touched: true,
-      },
-    };
+      }),
+    });
 
     this.setState({ controls: updatedControls });
   };
@@ -132,12 +107,14 @@ class Auth extends Component {
       <p>{this.props.error.message.replace("_", " ")}</p>
     );
 
+    let authRedirect = null;
     if (this.props.isAuthenticated) {
-      this.props.history.replace("/");
+      authRedirect = <Redirect to={this.props.authRedirectPath} />;
     }
 
     return (
       <div className={styles.Auth}>
+        {authRedirect}
         <h1>{this.state.isSignUp ? " Sign Up" : "Sign In"}</h1>
         {error}
         <form onSubmit={this.onSubmitHandler}>
@@ -157,6 +134,8 @@ const mapStateToProps = (state) => {
     isAuthenticated: state.auth.tokenId !== null,
     error: state.auth.error,
     loading: state.auth.loading,
+    buildingBurger: state.burger.building,
+    authRedirectPath: state.auth.authRedirectPath,
   };
 };
 
@@ -164,6 +143,7 @@ const mapDispatchToProps = (dispatch) => {
   return {
     authAsync: (email, password, isSignUp) =>
       dispatch(authAsync(email, password, isSignUp)),
+    setAuthRedirectPath: () => dispatch(setAuthRedirectPath("/")),
   };
 };
 

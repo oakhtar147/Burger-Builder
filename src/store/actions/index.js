@@ -10,4 +10,9 @@ export {
   fetchOrdersAsync,
 } from "./order";
 
-export { authAsync } from "./auth";
+export {
+  authAsync,
+  authLogout,
+  setAuthRedirectPath,
+  authCheckState,
+} from "./auth";

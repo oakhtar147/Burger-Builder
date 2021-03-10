@@ -11,10 +11,6 @@ const OrderSummary = (props) => {
     </li>
   ));
 
-  useEffect(() => {
-    console.log("[OrderSummary] useEffect");
-  }, [props.show]);
-
   return (
     <>
       <h3>Excellent choice!</h3>

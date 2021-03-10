@@ -1,11 +1,12 @@
 import * as actionTypes from "../actions/actionTypes";
-import { updateObject as updateState } from "../utility";
+import { updateObject as updateState } from "../../shared/utility";
 
 const initState = {
   tokenId: null,
   userId: null,
   error: null,
   loading: false,
+  authRedirectPath: "/",
 };
 
 const authStarted = (state, action) => {
@@ -28,6 +29,10 @@ const authLogout = (state, action) => {
   return updateState(state, { tokenId: null, userId: null });
 };
 
+const setAuthRedirectPath = (state, action) => {
+  return updateState(state, { authRedirectPath: action.path });
+};
+
 const reducer = (state = initState, action) => {
   switch (action.type) {
     case actionTypes.AUTH_STARTED:
@@ -38,6 +43,8 @@ const reducer = (state = initState, action) => {
       return authFailed(state, action);
     case actionTypes.AUTH_LOGOUT:
       return authLogout(state, action);
+    case actionTypes.SET_AUTH_REDIRECT_PATH:
+      return setAuthRedirectPath(state, action);
     default:
       return state;
   }

@@ -14,9 +14,10 @@ import {
   decrementIngredient,
   getIngredientsAsync,
   purchaseBurgerInit,
+  setAuthRedirectPath,
 } from "../../store/actions/";
 
-class BurgerBuilder extends Component {
+export class BurgerBuilder extends Component {
   state = {
     proceedToPurchase: false,
   };
@@ -26,7 +27,12 @@ class BurgerBuilder extends Component {
   }
 
   handlePurchase = () => {
-    this.setState({ proceedToPurchase: true });
+    if (this.props.isAuthenticated) {
+      this.setState({ proceedToPurchase: true });
+    } else {
+      this.props.setAuthRedirectPath("/checkout");
+      this.props.history.push("/auth");
+    }
   };
 
   handleCancelPurchase = () => {
@@ -60,8 +66,9 @@ class BurgerBuilder extends Component {
             decrementIngredient={this.props.handleDecrementIngredient}
             disabledIngredients={disabledIngredients}
             totalPrice={this.props.totalPrice}
-            purchasable={this.props.totalPrice >= 4.0}
+            purchasable={this.props.totalPrice > 4.0}
             proceedToPurchase={this.handlePurchase}
+            isAuthenticated={this.props.isAuthenticated}
           />
         </>
       );
@@ -96,6 +103,7 @@ const mapStateToProps = (state) => {
     ingredients: state.burger.ingredients,
     totalPrice: state.burger.totalPrice,
     error: state.burger.error,
+    isAuthenticated: state.auth.tokenId !== null,
   };
 };
 
@@ -105,6 +113,7 @@ const mapDispatchToProps = (dispatch) => {
     handleDecrementIngredient: (key) => dispatch(decrementIngredient(key)),
     getIngredients: () => dispatch(getIngredientsAsync()),
     purchaseBurgerInit: () => dispatch(purchaseBurgerInit()),
+    setAuthRedirectPath: (path) => dispatch(setAuthRedirectPath(path)),
   };
 };
 

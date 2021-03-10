@@ -6,7 +6,9 @@ import NavigationItem from "./NagivationItem/NavigationItem";
 const NavigationItems = ({ isAuthenticated }) => (
   <div className={styles.NavigationItems}>
     <NavigationItem link="/">Burger Builder</NavigationItem>
-    <NavigationItem link="/orders">My Orders</NavigationItem>
+    {isAuthenticated && (
+      <NavigationItem link="/orders">My Orders</NavigationItem>
+    )}
     {isAuthenticated ? (
       <NavigationItem link="/logout">Logout</NavigationItem>
     ) : (
